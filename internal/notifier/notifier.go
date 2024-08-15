@@ -6,7 +6,6 @@ import (
 	"io"
 	"library/internal/botkit/markup"
 	"library/internal/model"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -65,14 +64,12 @@ func (n *Notifier) Start(ctx context.Context) error {
 }
 
 func (n *Notifier) SelectAndSendArticle(ctx context.Context) error {
-	log.Printf("[INFO] selecting new articles")
 	// TODO: add transactions?
 	topArticles, err := n.articles.AllNotPosted(ctx, time.Now().UTC().Add(-time.Hour*24), 1)
 	if err != nil {
 		// TODO: wrap
 		return err
 	}
-	log.Printf("[INFO] got articles: %d", len(topArticles))
 
 	if len(topArticles) == 0 {
 		return nil
@@ -80,18 +77,14 @@ func (n *Notifier) SelectAndSendArticle(ctx context.Context) error {
 
 	article := topArticles[0]
 
-	log.Printf("[INFO] selected: %s", article.Link)
-
 	summary, err := n.extractSummary(article)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[INFO] sending: %s", article.Link)
 	if err := n.sendArticle(article, summary); err != nil {
 		return err
 	}
-	log.Printf("[INFO] send: %s", article.Link)
 
 	return n.articles.MarkPosted(ctx, article.ID)
 }
